@@ -144,7 +144,7 @@ def train():
 
     data_loader = data.DataLoader(dataset, args.batch_size,
                                   num_workers=args.num_workers,
-                                  shuffle=True, collate_fn=detection_collate,
+                                  shuffle=False, collate_fn=detection_collate,
                                   pin_memory=True)
     # create batch iterator
     batch_iterator = iter(data_loader)
@@ -161,8 +161,13 @@ def train():
             step_index += 1
             adjust_learning_rate(optimizer, args.gamma, step_index)
 
-        # load train data
-        images, targets = next(batch_iterator)
+       
+        try:
+            # load train data
+            images, targets = next(batch_iterator)
+        except StopIteration:
+            batch_iterator = iter(data_loader)
+            images, targets = next(batch_iterator)
 
         if args.cuda:
             images = Variable(images.cuda())
